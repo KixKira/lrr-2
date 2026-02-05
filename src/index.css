@@ -1,0 +1,274 @@
+@import url("https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap");
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* MindCare - Mental Health Platform Design System */
+
+@layer base {
+  :root {
+    /* Calming mental health palette - soft teals, lavenders, warm accents */
+    --background: 195 30% 98%;
+    --foreground: 215 35% 20%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 215 35% 20%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 215 35% 20%;
+
+    /* Primary: Soothing Teal */
+    --primary: 175 55% 45%;
+    --primary-foreground: 0 0% 100%;
+
+    /* Secondary: Soft Lavender */
+    --secondary: 265 40% 92%;
+    --secondary-foreground: 265 40% 35%;
+
+    /* Muted: Light gray-blue */
+    --muted: 200 25% 94%;
+    --muted-foreground: 215 20% 50%;
+
+    /* Accent: Warm Coral for CTAs */
+    --accent: 15 85% 65%;
+    --accent-foreground: 0 0% 100%;
+
+    --destructive: 0 72% 60%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 200 25% 88%;
+    --input: 200 25% 88%;
+    --ring: 175 55% 45%;
+
+    --radius: 1rem;
+
+    /* Custom mental health tokens */
+    --calm: 175 55% 45%;
+    --calm-light: 175 50% 95%;
+    --lavender: 265 40% 75%;
+    --lavender-light: 265 45% 95%;
+    --coral: 15 85% 65%;
+    --coral-light: 15 80% 95%;
+    --sage: 145 30% 55%;
+    --sage-light: 145 35% 95%;
+    --sky: 200 75% 60%;
+    --sky-light: 200 70% 95%;
+
+    /* Gradients */
+    --gradient-primary: linear-gradient(
+      135deg,
+      hsl(175 55% 45%),
+      hsl(195 60% 55%)
+    );
+    --gradient-hero: linear-gradient(
+      135deg,
+      hsl(195 30% 98%) 0%,
+      hsl(175 40% 95%) 50%,
+      hsl(265 35% 96%) 100%
+    );
+    --gradient-card: linear-gradient(145deg, hsl(0 0% 100%), hsl(200 25% 98%));
+    --gradient-accent: linear-gradient(
+      135deg,
+      hsl(15 85% 65%),
+      hsl(25 90% 60%)
+    );
+    --gradient-calm: linear-gradient(
+      135deg,
+      hsl(175 55% 45%),
+      hsl(165 50% 50%)
+    );
+
+    /* Shadows */
+    --shadow-sm: 0 2px 8px hsl(215 35% 20% / 0.04);
+    --shadow-md: 0 4px 20px hsl(215 35% 20% / 0.08);
+    --shadow-lg: 0 8px 40px hsl(215 35% 20% / 0.12);
+    --shadow-glow: 0 0 40px hsl(175 55% 45% / 0.15);
+
+    --sidebar-background: 0 0% 98%;
+    --sidebar-foreground: 240 5.3% 26.1%;
+    --sidebar-primary: 175 55% 45%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 200 25% 94%;
+    --sidebar-accent-foreground: 215 35% 20%;
+    --sidebar-border: 200 25% 88%;
+    --sidebar-ring: 175 55% 45%;
+  }
+
+  .dark {
+    --background: 220 30% 8%;
+    --foreground: 195 25% 95%;
+
+    --card: 220 25% 12%;
+    --card-foreground: 195 25% 95%;
+
+    --popover: 220 25% 12%;
+    --popover-foreground: 195 25% 95%;
+
+    --primary: 175 55% 50%;
+    --primary-foreground: 220 30% 8%;
+
+    --secondary: 265 30% 25%;
+    --secondary-foreground: 265 40% 85%;
+
+    --muted: 220 25% 18%;
+    --muted-foreground: 215 20% 60%;
+
+    --accent: 15 80% 60%;
+    --accent-foreground: 0 0% 100%;
+
+    --destructive: 0 65% 50%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 220 25% 20%;
+    --input: 220 25% 20%;
+    --ring: 175 55% 50%;
+
+    --calm: 175 55% 50%;
+    --calm-light: 175 40% 15%;
+    --lavender: 265 35% 45%;
+    --lavender-light: 265 30% 18%;
+    --coral: 15 75% 55%;
+    --coral-light: 15 60% 18%;
+    --sage: 145 25% 45%;
+    --sage-light: 145 25% 15%;
+    --sky: 200 65% 50%;
+    --sky-light: 200 50% 15%;
+
+    --gradient-primary: linear-gradient(
+      135deg,
+      hsl(175 55% 50%),
+      hsl(195 50% 45%)
+    );
+    --gradient-hero: linear-gradient(
+      135deg,
+      hsl(220 30% 8%) 0%,
+      hsl(220 25% 12%) 50%,
+      hsl(265 25% 12%) 100%
+    );
+    --gradient-card: linear-gradient(
+      145deg,
+      hsl(220 25% 14%),
+      hsl(220 25% 10%)
+    );
+    --gradient-accent: linear-gradient(
+      135deg,
+      hsl(15 75% 55%),
+      hsl(25 80% 50%)
+    );
+    --gradient-calm: linear-gradient(
+      135deg,
+      hsl(175 55% 50%),
+      hsl(165 45% 45%)
+    );
+
+    --shadow-sm: 0 2px 8px hsl(0 0% 0% / 0.2);
+    --shadow-md: 0 4px 20px hsl(0 0% 0% / 0.3);
+    --shadow-lg: 0 8px 40px hsl(0 0% 0% / 0.4);
+    --shadow-glow: 0 0 40px hsl(175 55% 50% / 0.2);
+
+    --sidebar-background: 220 25% 10%;
+    --sidebar-foreground: 195 25% 90%;
+    --sidebar-primary: 175 55% 50%;
+    --sidebar-primary-foreground: 220 30% 8%;
+    --sidebar-accent: 220 25% 18%;
+    --sidebar-accent-foreground: 195 25% 95%;
+    --sidebar-border: 220 25% 20%;
+    --sidebar-ring: 175 55% 50%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  html {
+    font-family: "Plus Jakarta Sans", sans-serif;
+  }
+
+  body {
+    @apply bg-background text-foreground antialiased;
+    background: var(--gradient-hero);
+    min-height: 100vh;
+  }
+}
+
+@layer components {
+  .btn-primary {
+    @apply bg-primary text-primary-foreground hover:opacity-90 transition-all duration-300;
+    box-shadow: var(--shadow-md);
+  }
+
+  .btn-accent {
+    background: var(--gradient-accent);
+    @apply text-accent-foreground hover:opacity-90 transition-all duration-300;
+    box-shadow: 0 4px 20px hsl(15 85% 65% / 0.3);
+  }
+
+  .card-elevated {
+    background: var(--gradient-card);
+    box-shadow: var(--shadow-md);
+    @apply rounded-2xl border border-border/50 backdrop-blur-sm;
+  }
+
+  .glass {
+    @apply bg-card/80 backdrop-blur-xl border border-border/30;
+    box-shadow: var(--shadow-lg);
+  }
+
+  .text-gradient {
+    @apply bg-clip-text text-transparent;
+    background-image: var(--gradient-primary);
+  }
+
+  .floating {
+    animation: float 6s ease-in-out infinite;
+  }
+
+  .breathing {
+    animation: breathe 4s ease-in-out infinite;
+  }
+
+  .pulse-soft {
+    animation: pulseSoft 3s ease-in-out infinite;
+  }
+}
+
+@layer utilities {
+  .safe-bottom {
+    padding-bottom: env(safe-area-inset-bottom, 1rem);
+  }
+}
+
+@keyframes float {
+  0%,
+  100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+@keyframes breathe {
+  0%,
+  100% {
+    transform: scale(1);
+    opacity: 0.8;
+  }
+  50% {
+    transform: scale(1.02);
+    opacity: 1;
+  }
+}
+
+@keyframes pulseSoft {
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 hsl(175 55% 45% / 0.4);
+  }
+  50% {
+    box-shadow: 0 0 0 15px hsl(175 55% 45% / 0);
+  }
+}
