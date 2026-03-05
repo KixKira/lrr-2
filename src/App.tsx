@@ -8,9 +8,12 @@ import Professionals from "./pages/Professionals";
 import Shop from "./pages/Shop";
 import Dashboard from "./pages/Dashboard";
 import Blog from "./pages/Blog";
-import Community from "./pages/Community";
 import NotFound from "./pages/NotFound";
 import { Toaster } from "sonner";
+import Auth from "./pages/Auth";
+import AdminDashboard from "./pages/AdminDashboard";
+import ProfessionalDashboard from "./pages/ProfessionalDashboard";
+import PatientProfile from "./pages/PatientProfile";
 
 const queryClient = new QueryClient();
 
@@ -22,12 +25,15 @@ const App = () => (
       <BrowserRouter>
         <Routes>
           <Route path="/" element={<Index />} />
+          <Route path="/auth" element={<Auth />} />
           <Route path="/appointments" element={<Appointments />} />
           <Route path="/professionals" element={<Professionals />} />
           <Route path="/shop" element={<Shop />} />
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/blog" element={<Blog />} />
-          <Route path="/community" element={<Community />} />
+          <Route path="/admin" element={<AdminDashboard />} />
+          <Route path="/professional" element={<ProfessionalDashboard />} />
+          <Route path="/profile" element={<PatientProfile />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>

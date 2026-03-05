@@ -1,11 +1,12 @@
-import { Button } from "@/components/ui/button";
 import { motion } from "framer-motion";
-import { ArrowRight, Heart, Shield, Sparkles } from "lucide-react";
+import { ArrowRight, Sparkles, Heart, Shield } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
 
 export const HeroSection = () => {
   return (
     <section className="relative overflow-hidden py-12 md:py-20">
+      {/* Decorative elements */}
       <div className="absolute top-20 left-10 w-32 h-32 bg-calm/10 rounded-full blur-3xl animate-float" />
       <div
         className="absolute bottom-20 right-10 w-40 h-40 bg-lavender/10 rounded-full blur-3xl animate-float"
@@ -15,6 +16,7 @@ export const HeroSection = () => {
         className="absolute top-40 right-20 w-24 h-24 bg-coral/10 rounded-full blur-2xl animate-float"
         style={{ animationDelay: "4s" }}
       />
+
       <div className="container relative">
         <div className="flex flex-col items-center text-center max-w-3xl mx-auto">
           <motion.div
@@ -28,6 +30,7 @@ export const HeroSection = () => {
               Tu bienestar es nuestra prioridad
             </span>
           </motion.div>
+
           <motion.h1
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
@@ -38,6 +41,7 @@ export const HeroSection = () => {
             <br />
             desde cualquier lugar
           </motion.h1>
+
           <motion.p
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
@@ -47,6 +51,7 @@ export const HeroSection = () => {
             Conecta con psicólogos certificados, accede a recursos exclusivos y
             únete a una comunidad que te apoya en cada paso de tu camino.
           </motion.p>
+
           <motion.div
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
@@ -63,6 +68,8 @@ export const HeroSection = () => {
               <Link to="/professionals">Ver Profesionales</Link>
             </Button>
           </motion.div>
+
+          {/* Trust badges */}
           <motion.div
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}

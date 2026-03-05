@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { Heart, Instagram, Facebook, Twitter, Mail } from "lucide-react";
+import { Heart, Instagram, Mail } from "lucide-react";
 
 const footerLinks = {
   servicios: [
@@ -46,18 +46,6 @@ export const Footer = () => {
                 className="w-9 h-9 rounded-full bg-muted flex items-center justify-center hover:bg-calm-light hover:text-calm transition-colors"
               >
                 <Instagram className="h-4 w-4" />
-              </Link>
-              <Link
-                to="#"
-                className="w-9 h-9 rounded-full bg-muted flex items-center justify-center hover:bg-calm-light hover:text-calm transition-colors"
-              >
-                <Facebook className="h-4 w-4" />
-              </Link>
-              <Link
-                to="#"
-                className="w-9 h-9 rounded-full bg-muted flex items-center justify-center hover:bg-calm-light hover:text-calm transition-colors"
-              >
-                <Twitter className="h-4 w-4" />
               </Link>
               <Link
                 to="#"
@@ -115,7 +103,7 @@ export const Footer = () => {
         </div>
         <div className="mt-12 pt-8 border-t border-border flex flex-col md:flex-row items-center justify-between gap-4">
           <p className="text-sm text-muted-foreground">
-            © 2024 La Ruta Resiliente. Todos los derechos reservados.
+            © 2026 La Ruta Resiliente. Todos los derechos reservados.
           </p>
           <p className="text-sm text-muted-foreground flex items-center gap-1">
             Hecho con <Heart className="h-4 w-4 text-coral fill-coral" /> para

@@ -22,7 +22,7 @@ import { Link } from "react-router-dom";
 const upcomingAppointments = [
   {
     id: 1,
-    professional: "Dra. María García",
+    professional: "María José Marquina",
     date: "Hoy",
     time: "15:00",
     type: "online",
@@ -31,12 +31,12 @@ const upcomingAppointments = [
   },
   {
     id: 2,
-    professional: "Dr. Carlos Mendoza",
+    professional: "María José Marquina",
     date: "Viernes 15",
     time: "10:00",
-    type: "online",
+    type: "presencial",
     image:
-      "https://images.unsplash.com/photo-1612349317150-e413f6a5b16d?w=100&h=100&fit=crop&crop=face",
+      "https://images.unsplash.com/photo-1559839734-2b71ea197ec2?w=100&h=100&fit=crop&crop=face",
   },
 ];
 

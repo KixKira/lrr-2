@@ -1,11 +1,11 @@
 import { motion } from "framer-motion";
 import {
-  BookOpen,
-  Calendar,
-  MessageCircle,
-  ShoppingBag,
-  Users,
   Video,
+  Users,
+  BookOpen,
+  MessageCircle,
+  Calendar,
+  ShoppingBag,
 } from "lucide-react";
 import { Link } from "react-router-dom";
 
@@ -91,13 +91,14 @@ export const ServicesSection = () => {
           viewport={{ once: true }}
           className="text-center mb-12"
         >
-          <h2 className="text-3xl font-bold mb-4 md:text-4xl">
+          <h2 className="text-3xl md:text-4xl font-bold mb-4">
             Nuestros <span className="text-gradient">Servicios</span>
           </h2>
           <p className="text-muted-foreground max-w-xl mx-auto">
             Todo lo que necesitas para tu bienestar mental en un solo lugar
           </p>
         </motion.div>
+
         <motion.div
           variants={containerVariants}
           initial="hidden"
