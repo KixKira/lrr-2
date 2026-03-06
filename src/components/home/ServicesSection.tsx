@@ -28,11 +28,11 @@ const services = [
   },
   {
     icon: Users,
-    title: "Talleres Grupales",
+    title: "Talleres a Empresas y Comunidades",
     description: "Aprende técnicas de bienestar en grupo",
     color: "sage",
     bgColor: "bg-sage-light",
-    link: "/workshops",
+    link: "#",
   },
   {
     icon: BookOpen,
@@ -40,15 +40,15 @@ const services = [
     description: "Artículos, videos y guías para tu crecimiento",
     color: "sky",
     bgColor: "bg-sky-light",
-    link: "/blog",
+    link: "#",
   },
   {
     icon: MessageCircle,
-    title: "Comunidad",
+    title: "Programa de Desarrollo Personal",
     description: "Conecta con personas que comparten tu camino",
     color: "coral",
     bgColor: "bg-coral-light",
-    link: "/community",
+    link: "#",
   },
   {
     icon: ShoppingBag,
@@ -56,7 +56,7 @@ const services = [
     description: "Productos y materiales para tu bienestar",
     color: "lavender",
     bgColor: "bg-lavender-light",
-    link: "/shop",
+    link: "#",
   },
 ];
 

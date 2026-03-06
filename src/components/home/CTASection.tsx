@@ -37,14 +37,14 @@ export const CTASection = () => {
                   <ArrowRight className="h-5 w-5 transition-transform group-hover:translate-x-1" />
                 </Link>
               </Button>
-              <Button
+              {/* <Button
                 variant="outline"
                 size="xl"
                 className="border-primary-foreground/30 text-primary-foreground hover:bg-primary-foreground/10"
                 asChild
               >
                 <Link to="/professionals">Conoce al equipo</Link>
-              </Button>
+              </Button> */}
             </div>
           </div>
         </motion.div>

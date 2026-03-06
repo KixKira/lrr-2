@@ -8,12 +8,18 @@ import {
   ChevronLeft,
   ChevronRight,
   Check,
+  User,
+  Phone,
+  Mail,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Header } from "@/components/layout/Header";
 import { MobileNav } from "@/components/layout/MobileNav";
 import { Footer } from "@/components/layout/Footer";
 import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 
 const timeSlots = [
   "09:00",
@@ -27,32 +33,13 @@ const timeSlots = [
   "18:00",
 ];
 
-const professionals = [
-  {
-    id: 1,
-    name: "Dra. María García",
-    specialty: "Psicología Clínica",
-    image:
-      "https://images.unsplash.com/photo-1559839734-2b71ea197ec2?w=100&h=100&fit=crop&crop=face",
-    price: 50,
-  },
-  {
-    id: 2,
-    name: "Dr. Carlos Mendoza",
-    specialty: "Terapia Cognitiva",
-    image:
-      "https://images.unsplash.com/photo-1612349317150-e413f6a5b16d?w=100&h=100&fit=crop&crop=face",
-    price: 45,
-  },
-  {
-    id: 3,
-    name: "Dra. Ana López",
-    specialty: "Psicología Infantil",
-    image:
-      "https://images.unsplash.com/photo-1594824476967-48c8b964273f?w=100&h=100&fit=crop&crop=face",
-    price: 55,
-  },
-];
+const professional = {
+  name: "María José Marquina",
+  specialty: "Psicología Clínica",
+  image:
+    "https://images.unsplash.com/photo-1559839734-2b71ea197ec2?w=100&h=100&fit=crop&crop=face",
+  price: 30,
+};
 
 const generateDays = () => {
   const days = [];
@@ -73,9 +60,10 @@ const generateDays = () => {
 
 const Appointments = () => {
   const [step, setStep] = useState(1);
-  const [selectedProfessional, setSelectedProfessional] = useState<
-    number | null
-  >(null);
+  const [patientName, setPatientName] = useState("");
+  const [patientEmail, setPatientEmail] = useState("");
+  const [patientPhone, setPatientPhone] = useState("");
+  const [patientNotes, setPatientNotes] = useState("");
   const [selectedDate, setSelectedDate] = useState<number | null>(null);
   const [selectedTime, setSelectedTime] = useState<string | null>(null);
   const [appointmentType, setAppointmentType] = useState<
@@ -91,9 +79,10 @@ const Appointments = () => {
     if (step > 1) setStep(step - 1);
   };
 
-  const selectedProfessionalData = professionals.find(
-    (p) => p.id === selectedProfessional,
-  );
+  const isStep1Valid =
+    patientName.trim() !== "" &&
+    patientEmail.trim() !== "" &&
+    patientPhone.trim() !== "";
 
   return (
     <div className="min-h-screen pb-20 md:pb-0">
@@ -104,7 +93,6 @@ const Appointments = () => {
           animate={{ opacity: 1, y: 0 }}
           className="max-w-2xl mx-auto"
         >
-          {/* Progress steps */}
           <div className="flex items-center justify-between mb-8">
             {[1, 2, 3, 4].map((s) => (
               <div key={s} className="flex items-center">
@@ -125,57 +113,76 @@ const Appointments = () => {
               </div>
             ))}
           </div>
-
-          {/* Step 1: Select Professional */}
           {step === 1 && (
             <motion.div
               initial={{ opacity: 0, x: 20 }}
               animate={{ opacity: 1, x: 0 }}
               exit={{ opacity: 0, x: -20 }}
             >
-              <h2 className="text-2xl font-bold mb-2">Elige tu profesional</h2>
+              <h2 className="text-2xl font-bold mb-2">Tus datos</h2>
               <p className="text-muted-foreground mb-6">
-                Selecciona el psicólogo con quien deseas agendar
+                Completa tu información para agendar la cita
               </p>
 
               <div className="space-y-4">
-                {professionals.map((prof) => (
-                  <button
-                    key={prof.id}
-                    onClick={() => setSelectedProfessional(prof.id)}
-                    className={`w-full card-elevated p-4 flex items-center gap-4 transition-all ${
-                      selectedProfessional === prof.id
-                        ? "ring-2 ring-calm"
-                        : "hover:shadow-lg"
-                    }`}
-                  >
-                    <img
-                      src={prof.image}
-                      alt={prof.name}
-                      className="w-14 h-14 rounded-xl object-cover"
+                <div className="space-y-2">
+                  <Label htmlFor="name">Nombre completo *</Label>
+                  <div className="relative">
+                    <User className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                    <Input
+                      id="name"
+                      placeholder="Tu nombre y apellido"
+                      value={patientName}
+                      onChange={(e) => setPatientName(e.target.value)}
+                      className="pl-10"
                     />
-                    <div className="flex-1 text-left">
-                      <h3 className="font-semibold">{prof.name}</h3>
-                      <p className="text-sm text-muted-foreground">
-                        {prof.specialty}
-                      </p>
-                    </div>
-                    <div className="text-right">
-                      <p className="text-lg font-bold">${prof.price}</p>
-                      <p className="text-xs text-muted-foreground">/sesión</p>
-                    </div>
-                    {selectedProfessional === prof.id && (
-                      <div className="w-6 h-6 rounded-full bg-calm flex items-center justify-center">
-                        <Check className="h-4 w-4 text-primary-foreground" />
-                      </div>
-                    )}
-                  </button>
-                ))}
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="email">Correo electrónico *</Label>
+                  <div className="relative">
+                    <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                    <Input
+                      id="email"
+                      type="email"
+                      placeholder="tu@email.com"
+                      value={patientEmail}
+                      onChange={(e) => setPatientEmail(e.target.value)}
+                      className="pl-10"
+                    />
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="phone">Teléfono / WhatsApp *</Label>
+                  <div className="relative">
+                    <Phone className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                    <Input
+                      id="phone"
+                      type="tel"
+                      placeholder="+58 412 000 0000"
+                      value={patientPhone}
+                      onChange={(e) => setPatientPhone(e.target.value)}
+                      className="pl-10"
+                    />
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="notes">Motivo de consulta (opcional)</Label>
+                  <Textarea
+                    id="notes"
+                    placeholder="Cuéntanos brevemente el motivo de tu consulta..."
+                    value={patientNotes}
+                    onChange={(e) => setPatientNotes(e.target.value)}
+                    rows={3}
+                  />
+                </div>
               </div>
             </motion.div>
           )}
 
-          {/* Step 2: Select Date */}
           {step === 2 && (
             <motion.div
               initial={{ opacity: 0, x: 20 }}
@@ -239,7 +246,6 @@ const Appointments = () => {
             </motion.div>
           )}
 
-          {/* Step 3: Select Type */}
           {step === 3 && (
             <motion.div
               initial={{ opacity: 0, x: 20 }}
@@ -282,14 +288,12 @@ const Appointments = () => {
                   </div>
                   <h3 className="font-semibold text-lg mb-2">Presencial</h3>
                   <p className="text-sm text-muted-foreground">
-                    Visita nuestro consultorio en el centro
+                    Visita nuestro consultorio en la Torre Calicanto, Maracay
                   </p>
                 </button>
               </div>
             </motion.div>
           )}
-
-          {/* Step 4: Confirmation */}
           {step === 4 && (
             <motion.div
               initial={{ opacity: 0, x: 20 }}
@@ -306,23 +310,27 @@ const Appointments = () => {
               </p>
 
               <div className="card-elevated p-6 text-left space-y-4">
-                {selectedProfessionalData && (
-                  <div className="flex items-center gap-4">
-                    <img
-                      src={selectedProfessionalData.image}
-                      alt={selectedProfessionalData.name}
-                      className="w-14 h-14 rounded-xl object-cover"
-                    />
-                    <div>
-                      <h3 className="font-semibold">
-                        {selectedProfessionalData.name}
-                      </h3>
-                      <p className="text-sm text-muted-foreground">
-                        {selectedProfessionalData.specialty}
-                      </p>
-                    </div>
+                <div className="flex items-center gap-4">
+                  <img
+                    src={professional.image}
+                    alt={professional.name}
+                    className="w-14 h-14 rounded-xl object-cover"
+                  />
+                  <div>
+                    <h3 className="font-semibold">{professional.name}</h3>
+                    <p className="text-sm text-muted-foreground">
+                      {professional.specialty}
+                    </p>
                   </div>
-                )}
+                </div>
+
+                <div className="pt-4 border-t border-border space-y-1">
+                  <p className="text-xs text-muted-foreground">Paciente</p>
+                  <p className="font-medium">{patientName}</p>
+                  <p className="text-sm text-muted-foreground">
+                    {patientEmail} · {patientPhone}
+                  </p>
+                </div>
 
                 <div className="grid grid-cols-2 gap-4 pt-4 border-t border-border">
                   <div className="flex items-center gap-3">
@@ -361,15 +369,14 @@ const Appointments = () => {
                       ) : (
                         <>
                           <MapPin className="h-3 w-3 mr-1" />
-                          Presencial
+                          Calle López Aveledo, entre 3ra y 2da transversal,
+                          Calicanto, Maracay
                         </>
                       )}
                     </Badge>
                   </div>
                   <div className="text-right">
-                    <p className="text-2xl font-bold">
-                      ${selectedProfessionalData?.price}
-                    </p>
+                    <p className="text-2xl font-bold">${professional.price}</p>
                   </div>
                 </div>
               </div>
@@ -400,7 +407,7 @@ const Appointments = () => {
               onClick={handleContinue}
               className="flex-1"
               disabled={
-                (step === 1 && !selectedProfessional) ||
+                (step === 1 && !isStep1Valid) ||
                 (step === 2 && (!selectedDate || !selectedTime))
               }
             >
