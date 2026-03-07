@@ -6,7 +6,6 @@ import { Link } from "react-router-dom";
 export const HeroSection = () => {
   return (
     <section className="relative overflow-hidden py-12 md:py-20">
-      {/* Decorative elements */}
       <div className="absolute top-20 left-10 w-32 h-32 bg-calm/10 rounded-full blur-3xl animate-float" />
       <div
         className="absolute bottom-20 right-10 w-40 h-40 bg-lavender/10 rounded-full blur-3xl animate-float"
@@ -27,7 +26,7 @@ export const HeroSection = () => {
           >
             <span className="inline-flex items-center gap-2 rounded-full bg-calm-light px-4 py-2 text-sm font-medium text-calm">
               <Sparkles className="h-4 w-4" />
-              Tu bienestar es nuestra prioridad
+              Mi prioridad es tu bienestar
             </span>
           </motion.div>
 
@@ -48,8 +47,8 @@ export const HeroSection = () => {
             transition={{ duration: 0.6, delay: 0.2 }}
             className="text-lg text-muted-foreground mb-8 max-w-xl"
           >
-            Conecta con psicólogos certificados, accede a recursos exclusivos y
-            únete a una comunidad que te apoya en cada paso de tu camino.
+            Conecta con la resiliencia, aprende mientras construyes tu propia
+            ruta hacia el bienestar.
           </motion.p>
 
           <motion.div
@@ -86,13 +85,13 @@ export const HeroSection = () => {
               <div className="flex h-8 w-8 items-center justify-center rounded-full bg-lavender-light">
                 <Heart className="h-4 w-4 text-lavender" />
               </div>
-              <span>+500 Pacientes</span>
+              <span>Psicóloga Certificada</span>
             </div>
             <div className="flex items-center gap-2 text-sm text-muted-foreground">
               <div className="flex h-8 w-8 items-center justify-center rounded-full bg-calm-light">
                 <Sparkles className="h-4 w-4 text-calm" />
               </div>
-              <span>Psicólogos Certificados</span>
+              <span>8 años de experiencia</span>
             </div>
           </motion.div>
         </div>

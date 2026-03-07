@@ -25,9 +25,9 @@ export const CTASection = () => {
             <h2 className="text-3xl md:text-4xl font-bold text-primary-foreground mb-4">
               Tu bienestar comienza hoy
             </h2>
-            <p className="text-primary-foreground/80 text-lg mb-8 max-w-xl mx-auto">
-              Da el primer paso hacia una vida más equilibrada. Nuestros
-              profesionales están listos para acompañarte.
+            <p className="text-primary-foreground/80 text-lg mb-8 max-w-l mx-auto">
+              Da el primer paso hacia el bienestar, recorramos juntos la ruta
+              resiliente.
             </p>
 
             <div className="flex flex-col sm:flex-row gap-4 justify-center">

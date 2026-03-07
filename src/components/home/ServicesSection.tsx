@@ -29,7 +29,7 @@ const services = [
   {
     icon: Users,
     title: "Talleres a Empresas y Comunidades",
-    description: "Aprende técnicas de bienestar en grupo",
+    description: "Encuentros grupales enfocados en el bienestar",
     color: "sage",
     bgColor: "bg-sage-light",
     link: "#",
@@ -45,7 +45,8 @@ const services = [
   {
     icon: MessageCircle,
     title: "Programa de Desarrollo Personal",
-    description: "Conecta con personas que comparten tu camino",
+    description:
+      "Acompañamiento individualizado y personalizado para el desarrollo de tu potencial",
     color: "coral",
     bgColor: "bg-coral-light",
     link: "#",
@@ -92,10 +93,11 @@ export const ServicesSection = () => {
           className="text-center mb-12"
         >
           <h2 className="text-3xl md:text-4xl font-bold mb-4">
-            Nuestros <span className="text-gradient">Servicios</span>
+            Conecta con el <span className="text-gradient">Bienestar</span>
           </h2>
           <p className="text-muted-foreground max-w-xl mx-auto">
-            Todo lo que necesitas para tu bienestar mental en un solo lugar
+            Todo lo que necesitas para cuidar de tu salud mental en un solo
+            lugar
           </p>
         </motion.div>
 

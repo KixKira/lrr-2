@@ -1,28 +1,28 @@
 import { motion } from "framer-motion";
-import { Star, Video, MapPin, Clock, Heart } from "lucide-react";
+import { Star, Video, MapPin, Clock } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Header } from "@/components/layout/Header";
 import { MobileNav } from "@/components/layout/MobileNav";
 import { Footer } from "@/components/layout/Footer";
 import { Badge } from "@/components/ui/badge";
 import { Link } from "react-router-dom";
+import professionalImg from "@/assets/images/maria-jose-marquina-psicologa-clinica.webp";
 
 const professional = {
   name: "María José Marquina",
   specialty: "Psicología Clínica",
   rating: 4.9,
   reviews: 124,
-  price: 50,
-  image:
-    "https://images.unsplash.com/photo-1559839734-2b71ea197ec2?w=400&h=400&fit=crop&crop=face",
-  tags: ["Ansiedad", "Depresión", "Estrés", "Autoestima", "Relaciones"],
-  experience: "12 años",
+  price: 30,
+  image: professionalImg,
+  tags: ["Ansiedad", "Depresión", "Estrés", "Autoestima", "Humanista"],
+  experience: "8 años",
   nextAvailable: "Hoy 15:00",
   online: true,
   presencial: true,
-  bio: "Psicóloga clínica especializada en trastornos de ansiedad, depresión y bienestar emocional. Mi enfoque combina la terapia cognitivo-conductual con técnicas de mindfulness para ofrecer un acompañamiento integral y personalizado.",
+  bio: "Mi nombre es María José Marquina, soy psicóloga mención clínica (FPV 13.249). Desde hace 8 años acompaño a otras personas en la búsqueda del bienestar tanto de manera individual como grupal, incluyendo organizaciones, adolescentes y adultos. Mi enfoque es humanista, sin embargo, integro diversas estrategias y métodos según el caso, siempre acompañando desde la ética y profesionalismo.",
   education:
-    "Licenciada en Psicología – Universidad Central de Venezuela. Máster en Psicología Clínica.",
+    "Licenciada en Psicología – Universidad Bicentenaria de Aragua, Venezuela",
 };
 
 const Professionals = () => {
@@ -35,7 +35,7 @@ const Professionals = () => {
           animate={{ opacity: 1, y: 0 }}
         >
           <div className="mb-8">
-            <h1 className="text-3xl font-bold mb-2">Tu Profesional</h1>
+            <h1 className="text-3xl font-bold mb-2">Conoce más sobre mí</h1>
             <p className="text-muted-foreground">
               Conoce a quien te acompañará en tu proceso
             </p>
