@@ -9,13 +9,13 @@ import {
   ArrowRight,
   Heart,
   ArrowLeft,
-  Info,
+  CheckCircle,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Link, useNavigate } from "react-router-dom";
-import { useAuth, mockCredentials } from "@/hooks/useAuth";
+import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
 import { z } from "zod";
 
@@ -51,6 +51,8 @@ const Auth = () => {
     confirmPassword: "",
   });
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [showConfirmationMessage, setShowConfirmationMessage] = useState(false);
+  const [registeredEmail, setRegisteredEmail] = useState("");
 
   const { signIn, signUp, user, isLoading } = useAuth();
   const navigate = useNavigate();
@@ -91,9 +93,11 @@ const Auth = () => {
           return;
         }
 
+        console.log("🔐 Intentando login con:", formData.email);
         const { error } = await signIn(formData.email, formData.password);
 
         if (error) {
+          console.error("❌ Error de login:", error.message);
           if (error.message.includes("Invalid login credentials")) {
             toast.error(
               "Credenciales inválidas. Verifica tu email y contraseña.",
@@ -104,6 +108,7 @@ const Auth = () => {
             toast.error(error.message);
           }
         } else {
+          console.log("✅ Login exitoso");
           toast.success("¡Bienvenido de vuelta!");
           navigate("/dashboard");
         }
@@ -122,7 +127,8 @@ const Auth = () => {
           return;
         }
 
-        const { error } = await signUp(
+        console.log("📝 Creando cuenta para:", formData.email);
+        const { error, confirmationRequired } = await signUp(
           formData.email,
           formData.password,
           formData.firstName,
@@ -130,6 +136,7 @@ const Auth = () => {
         );
 
         if (error) {
+          console.error("❌ Error de registro:", error.message);
           if (error.message.includes("User already registered")) {
             toast.error(
               "Este email ya está registrado. Intenta iniciar sesión.",
@@ -138,24 +145,22 @@ const Auth = () => {
             toast.error(error.message);
           }
         } else {
-          toast.success("¡Cuenta creada! Ya puedes iniciar sesión.");
-          setIsLogin(true);
+          console.log("✅ Registro exitoso");
+          if (confirmationRequired) {
+            setRegisteredEmail(formData.email);
+            setShowConfirmationMessage(true);
+          } else {
+            toast.success("¡Cuenta creada! Ya puedes iniciar sesión.");
+            setIsLogin(true);
+          }
         }
       }
     } catch (err) {
+      console.error("❌ Error inesperado:", err);
       toast.error("Ocurrió un error. Intenta de nuevo.");
     } finally {
       setIsSubmitting(false);
     }
-  };
-
-  const fillDemoCredentials = (role: "admin" | "patient") => {
-    const creds = mockCredentials[role];
-    setFormData((prev) => ({
-      ...prev,
-      email: creds.email,
-      password: creds.password,
-    }));
   };
 
   if (isLoading) {
@@ -203,44 +208,38 @@ const Auth = () => {
               : "Únete a nuestra comunidad de bienestar"}
           </p>
 
-          {/* Demo credentials info */}
-          {isLogin && (
-            <div className="mb-6 p-4 rounded-xl bg-calm-light border border-calm/20">
-              <div className="flex items-start gap-2 mb-3">
-                <Info className="h-5 w-5 text-calm mt-0.5" />
-                <div>
-                  <p className="text-sm font-medium text-calm">
-                    Credenciales de prueba
-                  </p>
-                  <p className="text-xs text-muted-foreground">
-                    Haz clic para autocompletar
-                  </p>
+          {/* Confirmation Message */}
+          {showConfirmationMessage && (
+            <motion.div
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="bg-calm-light/50 border border-calm/30 rounded-xl p-6 mb-6"
+            >
+              <div className="flex items-center gap-3 mb-3">
+                <div className="w-10 h-10 rounded-full bg-calm/20 flex items-center justify-center">
+                  <CheckCircle className="h-5 w-5 text-calm" />
                 </div>
+                <h2 className="font-semibold text-lg">¡Revisa tu email!</h2>
               </div>
-              <div className="flex flex-wrap gap-2">
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  onClick={() => fillDemoCredentials("admin")}
-                  className="text-xs"
-                >
-                  María José (Admin)
-                </Button>
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  onClick={() => fillDemoCredentials("patient")}
-                  className="text-xs"
-                >
-                  Paciente
-                </Button>
-              </div>
-            </div>
+              <p className="text-muted-foreground mb-4">
+                Hemos enviado un enlace de confirmación a{" "}
+                <strong>{registeredEmail}</strong>. Por favor revisa tu bandeja de
+                entrada y sigue las instrucciones para activar tu cuenta.
+              </p>              <Button
+                variant="outline"
+                className="w-full"
+                onClick={() => {
+                  setShowConfirmationMessage(false);
+                  setIsLogin(true);
+                }}
+              >
+                Ir al inicio de sesión
+              </Button>
+            </motion.div>
           )}
 
-          <form onSubmit={handleSubmit} className="space-y-5">
+          {!showConfirmationMessage && (
+            <form onSubmit={handleSubmit} className="space-y-5">
             {!isLogin && (
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
@@ -370,7 +369,9 @@ const Auth = () => {
               )}
             </Button>
           </form>
+          )}
 
+          {!showConfirmationMessage && (
           <p className="text-center text-muted-foreground mt-6">
             {isLogin ? "¿No tienes cuenta?" : "¿Ya tienes cuenta?"}{" "}
             <button
@@ -384,6 +385,7 @@ const Auth = () => {
               {isLogin ? "Regístrate" : "Inicia sesión"}
             </button>
           </p>
+          )}
         </motion.div>
       </div>
 

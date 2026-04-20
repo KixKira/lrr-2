@@ -1,11 +1,9 @@
-import { useState, createContext, useContext, ReactNode } from "react";
+import { useState, useEffect, createContext, useContext, ReactNode } from "react";
+import { supabase } from "@/integrations/supabase/client";
+import type { User } from "@supabase/supabase-js";
+import { sendConfirmationEmail } from "@/services/email";
 
 type AppRole = "admin" | "professional" | "patient";
-
-interface User {
-  id: string;
-  email: string;
-}
 
 interface Profile {
   id: string;
@@ -16,7 +14,10 @@ interface Profile {
   phone: string | null;
   avatar_url: string | null;
   bio: string | null;
+  created_at: string;
 }
+
+type UserMeta = Record<string, string>;
 
 interface AuthContextType {
   user: User | null;
@@ -38,68 +39,171 @@ interface AuthContextType {
   updateProfile: (data: Partial<Profile>) => void;
 }
 
-// Mock users — María José Marquina is the sole professional & admin
-const mockUsers: Record<
-  string,
-  { password: string; roles: AppRole[]; profile: Profile }
-> = {
-  "mariajose@lrr.com": {
-    password: "admin123",
-    roles: ["admin", "professional"],
-    profile: {
-      id: "1",
-      user_id: "1",
-      email: "mariajose@lrr.com",
-      first_name: "María José",
-      last_name: "Marquina",
-      phone: "+1234567890",
-      avatar_url:
-        "https://images.unsplash.com/photo-1559839734-2b71ea197ec2?w=400&h=400&fit=crop&crop=face",
-      bio: "Psicóloga clínica especializada en ansiedad, depresión y bienestar emocional.",
-    },
-  },
-  "paciente@lrr.com": {
-    password: "patient123",
-    roles: ["patient"],
-    profile: {
-      id: "2",
-      user_id: "2",
-      email: "paciente@lrr.com",
-      first_name: "Juan",
-      last_name: "Pérez",
-      phone: "+1234567892",
-      avatar_url: null,
-      bio: "Buscando mejorar mi bienestar mental",
-    },
-  },
+const AuthContext = createContext<AuthContextType | undefined>(undefined);
+
+// ── helpers (module-level, no hooks) ────────────────────────────────────────
+
+const ensurePatientRole = async (userId: string) => {
+  const { data: existing } = await supabase
+    .from("user_roles")
+    .select("role")
+    .eq("user_id", userId);
+  if (!existing || existing.length === 0) {
+    await supabase.from("user_roles").insert({ user_id: userId, role: "patient" });
+  }
 };
 
-const AuthContext = createContext<AuthContextType | undefined>(undefined);
+const createProfile = async (
+  userId: string,
+  email: string,
+  meta?: UserMeta,
+): Promise<Profile | null> => {
+  const { data, error } = await supabase
+    .from("profiles")
+    .insert({
+      user_id: userId,
+      email,
+      first_name: meta?.first_name ?? null,
+      last_name: meta?.last_name ?? null,
+    })
+    .select()
+    .single();
+
+  if (error) {
+    console.error("Error creating profile:", error);
+    return null;
+  }
+
+  await ensurePatientRole(userId);
+  return data as Profile;
+};
+
+const backfillNames = (userId: string, meta: UserMeta, existing: Profile) => {
+  const updates: Partial<Profile> = {};
+  if (!existing.first_name && meta.first_name) updates.first_name = meta.first_name;
+  if (!existing.last_name && meta.last_name) updates.last_name = meta.last_name;
+  if (Object.keys(updates).length === 0) return;
+
+  // Fire-and-forget: update the DB in the background, don't block the UI
+  supabase.from("profiles").update(updates).eq("user_id", userId);
+};
+
+const fetchProfile = async (
+  userId: string,
+  userEmail?: string,
+  meta?: UserMeta,
+): Promise<Profile | null> => {
+  const { data, error } = await supabase
+    .from("profiles")
+    .select("*")
+    .eq("user_id", userId)
+    .maybeSingle();
+
+  if (error) {
+    console.error("Error fetching profile:", error);
+    return null;
+  }
+
+  if (!data) return userEmail ? createProfile(userId, userEmail, meta) : null;
+
+  const profile = data as Profile;
+
+  if (meta && (!profile.first_name || !profile.last_name)) {
+    backfillNames(userId, meta, profile); // fire-and-forget
+    return {
+      ...profile,
+      first_name: profile.first_name ?? meta.first_name ?? null,
+      last_name: profile.last_name ?? meta.last_name ?? null,
+    };
+  }
+
+  return profile;
+};
+
+const fetchRoles = async (userId: string): Promise<AppRole[]> => {
+  const { data, error } = await supabase
+    .from("user_roles")
+    .select("role")
+    .eq("user_id", userId);
+
+  if (error) {
+    console.error("Error fetching roles:", error);
+    return [];
+  }
+
+  return data.map((r) => r.role as AppRole);
+};
+
+// ── provider ─────────────────────────────────────────────────────────────────
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
   const [profile, setProfile] = useState<Profile | null>(null);
   const [roles, setRoles] = useState<AppRole[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+
+  const loadSessionUser = async (sessionUser: User) => {
+    const meta = sessionUser.user_metadata as UserMeta | undefined;
+    const [profileData, rolesData] = await Promise.all([
+      fetchProfile(sessionUser.id, sessionUser.email, meta),
+      fetchRoles(sessionUser.id),
+    ]);
+    setUser(sessionUser);
+    setProfile(profileData);
+    setRoles(rolesData);
+  };
+
+  useEffect(() => {
+    const loadUser = async () => {
+      setIsLoading(true);
+      console.log("🔄 Cargando sesión...");
+
+      const { data: { session }, error } = await supabase.auth.getSession();
+
+      if (error) console.error("❌ Error al cargar sesión:", error);
+
+      if (session?.user) {
+        console.log("✅ Sesión encontrada:", session.user.email);
+        await loadSessionUser(session.user);
+      } else {
+        console.log("ℹ️ No hay sesión activa");
+      }
+
+      setIsLoading(false);
+    };
+
+    loadUser();
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      async (event, session) => {
+        if (event === "SIGNED_IN" || event === "TOKEN_REFRESHED") {
+          if (session?.user) await loadSessionUser(session.user);
+        } else if (event === "SIGNED_OUT") {
+          setUser(null);
+          setProfile(null);
+          setRoles([]);
+        }
+      },
+    );
+
+    return () => { subscription.unsubscribe(); };
+  }, []);
 
   const signIn = async (
     email: string,
     password: string,
   ): Promise<{ error: Error | null }> => {
-    setIsLoading(true);
-    await new Promise((resolve) => setTimeout(resolve, 500));
+    console.log("🔐 signIn iniciado para:", email);
 
-    const mockUser = mockUsers[email.toLowerCase()];
+    const { data, error } = await supabase.auth.signInWithPassword({ email, password });
 
-    if (!mockUser || mockUser.password !== password) {
-      setIsLoading(false);
-      return { error: new Error("Invalid login credentials") };
+    if (error) {
+      console.error("❌ Error en signIn:", error.message);
+      return { error: new Error(error.message) };
     }
 
-    setUser({ id: mockUser.profile.user_id, email });
-    setProfile(mockUser.profile);
-    setRoles(mockUser.roles);
-    setIsLoading(false);
+    console.log("✅ signIn exitoso:", data.user?.email);
+    if (data.user) await loadSessionUser(data.user);
 
     return { error: null };
   };
@@ -109,54 +213,61 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     password: string,
     firstName?: string,
     lastName?: string,
-  ): Promise<{ error: Error | null }> => {
-    setIsLoading(true);
-    await new Promise((resolve) => setTimeout(resolve, 500));
+  ): Promise<{ error: Error | null; confirmationRequired?: boolean }> => {
+    console.log("📝 signUp iniciado para:", email);
 
-    if (mockUsers[email.toLowerCase()]) {
-      setIsLoading(false);
-      return { error: new Error("User already registered") };
+    const { data, error } = await supabase.auth.signUp({
+      email,
+      password,
+      options: {
+        data: { first_name: firstName, last_name: lastName },
+        emailRedirectTo: `${window.location.origin}/auth?confirmed=true`,
+      },
+    });
+
+    if (error) {
+      console.error("❌ Error en signUp:", error.message);
+      return { error: new Error(error.message) };
     }
 
-    const newUserId = Date.now().toString();
-    const newProfile: Profile = {
-      id: newUserId,
-      user_id: newUserId,
-      email,
-      first_name: firstName || null,
-      last_name: lastName || null,
-      phone: null,
-      avatar_url: null,
-      bio: null,
-    };
+    console.log("✅ signUp exitoso:", data.user?.email);
 
-    mockUsers[email.toLowerCase()] = {
-      password,
-      roles: ["patient"],
-      profile: newProfile,
-    };
+    if (data.user?.confirmation_sent_at) {
+      const confirmationUrl = `${window.location.origin}/auth?confirmation_token=${data.user.id}`;
+      const { success, error: emailError } = await sendConfirmationEmail(
+        email,
+        confirmationUrl,
+        firstName,
+      );
+      if (!success) console.error("❌ Error enviando email:", emailError);
+      else console.log("✅ Email de confirmación enviado");
+    }
 
-    setIsLoading(false);
-    return { error: null };
+    // Profile is created by the DB trigger with first_name/last_name from metadata.
+    // If sign-up skipped email confirmation (session exists), load profile now.
+    if (data.session && data.user) await loadSessionUser(data.user);
+
+    return { error: null, confirmationRequired: !data.session };
   };
 
   const signOut = async () => {
     setUser(null);
     setProfile(null);
     setRoles([]);
+    await supabase.auth.signOut({ scope: "local" });
   };
 
-  const refreshProfile = async () => {};
-
-  const updateProfile = (data: Partial<Profile>) => {
-    if (profile) {
-      setProfile({ ...profile, ...data });
+  const refreshProfile = async () => {
+    if (user) {
+      const meta = user.user_metadata as UserMeta | undefined;
+      const profileData = await fetchProfile(user.id, user.email, meta);
+      setProfile(profileData);
     }
   };
 
-  const isAdmin = roles.includes("admin");
-  const isProfessional = roles.includes("professional");
-  const isPatient = roles.includes("patient");
+  const updateProfile = (data: Partial<Profile>) => {
+    if (profile) setProfile({ ...profile, ...data });
+  };
 
   return (
     <AuthContext.Provider
@@ -165,9 +276,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         profile,
         roles,
         isLoading,
-        isAdmin,
-        isProfessional,
-        isPatient,
+        isAdmin: roles.includes("admin"),
+        isProfessional: roles.includes("professional"),
+        isPatient: roles.includes("patient"),
         signIn,
         signUp,
         signOut,
@@ -186,17 +297,4 @@ export const useAuth = () => {
     throw new Error("useAuth must be used within an AuthProvider");
   }
   return context;
-};
-
-export const mockCredentials = {
-  admin: {
-    email: "mariajose@lrr.com",
-    password: "admin123",
-    label: "María José (Admin)",
-  },
-  patient: {
-    email: "paciente@lrr.com",
-    password: "patient123",
-    label: "Paciente",
-  },
 };

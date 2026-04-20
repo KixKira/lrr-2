@@ -2,7 +2,7 @@
 CREATE TYPE public.app_role AS ENUM ('admin', 'professional', 'patient');
 
 -- Create profiles table
-CREATE TABLE public.profiles (
+CREATE TABLE IF NOT EXISTS public.profiles (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE NOT NULL UNIQUE,
     email TEXT NOT NULL,
@@ -16,7 +16,7 @@ CREATE TABLE public.profiles (
 );
 
 -- Create user roles table (separate for security)
-CREATE TABLE public.user_roles (
+CREATE TABLE IF NOT EXISTS public.user_roles (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE NOT NULL,
     role app_role NOT NULL DEFAULT 'patient',
@@ -25,7 +25,7 @@ CREATE TABLE public.user_roles (
 );
 
 -- Create professionals table (extended info for professionals)
-CREATE TABLE public.professionals (
+CREATE TABLE IF NOT EXISTS public.professionals (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE NOT NULL UNIQUE,
     specialty TEXT NOT NULL,
@@ -42,7 +42,7 @@ CREATE TABLE public.professionals (
 );
 
 -- Create appointments table
-CREATE TABLE public.appointments (
+CREATE TABLE IF NOT EXISTS public.appointments (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     patient_id UUID REFERENCES auth.users(id) ON DELETE CASCADE NOT NULL,
     professional_id UUID REFERENCES public.professionals(id) ON DELETE CASCADE NOT NULL,
@@ -57,7 +57,7 @@ CREATE TABLE public.appointments (
 );
 
 -- Create professional availability table
-CREATE TABLE public.professional_availability (
+CREATE TABLE IF NOT EXISTS public.professional_availability (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     professional_id UUID REFERENCES public.professionals(id) ON DELETE CASCADE NOT NULL,
     day_of_week INTEGER CHECK (day_of_week >= 0 AND day_of_week <= 6) NOT NULL,
@@ -68,7 +68,7 @@ CREATE TABLE public.professional_availability (
 );
 
 -- Create clinical notes table (only accessible by the professional)
-CREATE TABLE public.clinical_notes (
+CREATE TABLE IF NOT EXISTS public.clinical_notes (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     professional_id UUID REFERENCES public.professionals(id) ON DELETE CASCADE NOT NULL,
     patient_id UUID REFERENCES auth.users(id) ON DELETE CASCADE NOT NULL,
@@ -80,7 +80,7 @@ CREATE TABLE public.clinical_notes (
 );
 
 -- Create messages table for communication
-CREATE TABLE public.messages (
+CREATE TABLE IF NOT EXISTS public.messages (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     sender_id UUID REFERENCES auth.users(id) ON DELETE CASCADE NOT NULL,
     receiver_id UUID REFERENCES auth.users(id) ON DELETE CASCADE NOT NULL,
@@ -90,7 +90,7 @@ CREATE TABLE public.messages (
 );
 
 -- Create payments table
-CREATE TABLE public.payments (
+CREATE TABLE IF NOT EXISTS public.payments (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     appointment_id UUID REFERENCES public.appointments(id) ON DELETE SET NULL,
     patient_id UUID REFERENCES auth.users(id) ON DELETE CASCADE NOT NULL,

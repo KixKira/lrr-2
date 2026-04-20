@@ -139,6 +139,85 @@ export type Database = {
         };
         Relationships: [];
       };
+      mood_entries: {
+        Row: {
+          id: string;
+          patient_id: string;
+          professional_id: string | null;
+          mood_score: number;
+          mood_emoji: string;
+          notes: string | null;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          patient_id?: string;
+          professional_id?: string | null;
+          mood_score: number;
+          mood_emoji: string;
+          notes?: string | null;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          patient_id?: string;
+          professional_id?: string | null;
+          mood_score?: number;
+          mood_emoji?: string;
+          notes?: string | null;
+          created_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "mood_entries_professional_id_fkey";
+            columns: ["professional_id"];
+            isOneToOne: false;
+            referencedRelation: "professionals";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      notifications: {
+        Row: {
+          id: string;
+          user_id: string;
+          type: string;
+          title: string;
+          content: Json | null;
+          is_read: boolean | null;
+          email_sent: boolean | null;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          user_id: string;
+          type: string;
+          title: string;
+          content?: Json | null;
+          is_read?: boolean | null;
+          email_sent?: boolean | null;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          user_id?: string;
+          type?: string;
+          title?: string;
+          content?: Json | null;
+          is_read?: boolean | null;
+          email_sent?: boolean | null;
+          created_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "notifications_user_id_fkey";
+            columns: ["user_id"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["user_id"];
+          },
+        ];
+      };
       payments: {
         Row: {
           amount: number;

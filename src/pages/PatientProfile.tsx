@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { motion } from "framer-motion";
 import {
   User,
@@ -10,6 +10,7 @@ import {
   Heart,
   Clock,
   ArrowLeft,
+  Loader2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -20,16 +21,29 @@ import { MobileNav } from "@/components/layout/MobileNav";
 import { useAuth } from "@/hooks/useAuth";
 import { useNavigate, Link } from "react-router-dom";
 import { toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
+
+const MONTHS_ES = [
+  "Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio",
+  "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre",
+];
 
 const PatientProfile = () => {
-  const { user, profile, isLoading, updateProfile } = useAuth();
+  const { user, profile, isLoading, refreshProfile, updateProfile } = useAuth();
   const navigate = useNavigate();
   const [isSaving, setIsSaving] = useState(false);
+  const [isUploadingAvatar, setIsUploadingAvatar] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const [formData, setFormData] = useState({
     first_name: "",
     last_name: "",
     phone: "",
     bio: "",
+  });
+  const [stats, setStats] = useState({
+    totalAppointments: 0,
+    upcomingAppointments: 0,
+    memberSince: "",
   });
 
   useEffect(() => {
@@ -49,6 +63,82 @@ const PatientProfile = () => {
     }
   }, [profile]);
 
+  useEffect(() => {
+    if (!user) return;
+    const fetchStats = async () => {
+      const now = new Date().toISOString();
+      const [totalRes, upcomingRes] = await Promise.all([
+        supabase
+          .from("appointments")
+          .select("id", { count: "exact", head: true })
+          .eq("patient_id", user.id),
+        supabase
+          .from("appointments")
+          .select("id", { count: "exact", head: true })
+          .eq("patient_id", user.id)
+          .gt("scheduled_at", now)
+          .neq("status", "cancelled"),
+      ]);
+
+      let memberSince = "";
+      if (profile?.created_at) {
+        const d = new Date(profile.created_at);
+        memberSince = `${MONTHS_ES[d.getMonth()]} ${d.getFullYear()}`;
+      }
+
+      setStats({
+        totalAppointments: totalRes.count ?? 0,
+        upcomingAppointments: upcomingRes.count ?? 0,
+        memberSince,
+      });
+    };
+    fetchStats();
+  }, [user, profile]);
+
+  const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !user) return;
+
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error("La imagen no puede superar 5MB");
+      return;
+    }
+
+    setIsUploadingAvatar(true);
+    try {
+      const ext = file.name.split(".").pop();
+      const path = `${user.id}/avatar.${ext}`;
+
+      const { error: uploadError } = await supabase.storage
+        .from("avatars")
+        .upload(path, file, { upsert: true });
+
+      if (uploadError) throw uploadError;
+
+      const { data: { publicUrl } } = supabase.storage
+        .from("avatars")
+        .getPublicUrl(path);
+
+      const cacheBustedUrl = `${publicUrl}?t=${Date.now()}`;
+
+      const { error: updateError } = await supabase
+        .from("profiles")
+        .update({ avatar_url: cacheBustedUrl, updated_at: new Date().toISOString() })
+        .eq("user_id", user.id);
+
+      if (updateError) throw updateError;
+
+      updateProfile({ avatar_url: cacheBustedUrl });
+      toast.success("Foto de perfil actualizada");
+    } catch (error: any) {
+      console.error("Error uploading avatar:", error);
+      toast.error(error.message || "Error al subir la foto");
+    } finally {
+      setIsUploadingAvatar(false);
+      if (fileInputRef.current) fileInputRef.current.value = "";
+    }
+  };
+
   const handleInputChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
   ) => {
@@ -58,20 +148,40 @@ const PatientProfile = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!user) {
+      toast.error("Debes iniciar sesión para actualizar tu perfil");
+      return;
+    }
+
     setIsSaving(true);
 
-    // Simulate network delay
-    await new Promise((resolve) => setTimeout(resolve, 500));
+    try {
+      // Update profile in Supabase
+      const { error } = await supabase
+        .from("profiles")
+        .update({
+          first_name: formData.first_name,
+          last_name: formData.last_name,
+          phone: formData.phone,
+          bio: formData.bio,
+          updated_at: new Date().toISOString(),
+        })
+        .eq("user_id", user.id);
 
-    updateProfile({
-      first_name: formData.first_name,
-      last_name: formData.last_name,
-      phone: formData.phone,
-      bio: formData.bio,
-    });
+      if (error) {
+        throw error;
+      }
 
-    toast.success("Perfil actualizado correctamente");
-    setIsSaving(false);
+      // Refresh profile in auth context
+      await refreshProfile();
+
+      toast.success("Perfil actualizado correctamente");
+    } catch (error: any) {
+      console.error("Error updating profile:", error);
+      toast.error(error.message || "Error al actualizar el perfil");
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   if (isLoading) {
@@ -81,13 +191,6 @@ const PatientProfile = () => {
       </div>
     );
   }
-
-  // Mock stats for UI
-  const stats = {
-    totalAppointments: 8,
-    upcomingAppointments: 2,
-    memberSince: "Enero 2024",
-  };
 
   return (
     <div className="min-h-screen pb-20 md:pb-8">
@@ -121,9 +224,25 @@ const PatientProfile = () => {
                     <User className="h-12 w-12 text-calm" />
                   )}
                 </div>
-                <button className="absolute bottom-0 right-0 w-8 h-8 rounded-full bg-calm text-primary-foreground flex items-center justify-center shadow-lg hover:bg-calm/90 transition-colors">
-                  <Camera className="h-4 w-4" />
+                <button
+                  type="button"
+                  onClick={() => fileInputRef.current?.click()}
+                  disabled={isUploadingAvatar}
+                  className="absolute bottom-0 right-0 w-8 h-8 rounded-full bg-calm text-primary-foreground flex items-center justify-center shadow-lg hover:bg-calm/90 transition-colors disabled:opacity-60"
+                >
+                  {isUploadingAvatar ? (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  ) : (
+                    <Camera className="h-4 w-4" />
+                  )}
                 </button>
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept="image/jpeg,image/png,image/webp,image/gif"
+                  className="hidden"
+                  onChange={handleAvatarUpload}
+                />
               </div>
 
               <div className="text-center md:text-left flex-1">

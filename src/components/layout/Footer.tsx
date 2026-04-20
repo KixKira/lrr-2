@@ -5,13 +5,13 @@ const footerLinks = {
   servicios: [
     { label: "Terapia Online", href: "/appointments" },
     { label: "Citas Presenciales", href: "/appointments" },
-    { label: "Talleres", href: "/workshops" },
-    { label: "Tienda", href: "/shop" },
+    // { label: "Talleres", href: "/workshops" },
+    // { label: "Tienda", href: "/shop" },
   ],
   recursos: [
-    { label: "Blog", href: "/blog" },
-    { label: "Comunidad", href: "/community" },
-    { label: "Material Descargable", href: "/resources" },
+    // { label: "Blog", href: "/blog" },
+    // { label: "Comunidad", href: "/community" },
+    // { label: "Material Descargable", href: "/resources" },
     { label: "FAQ", href: "/faq" },
   ],
   legal: [

@@ -1,0 +1,21 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(ls:*)",
+      "Bash(npx tsc:*)",
+      "Bash(npm run:*)",
+      "Bash(curl:*)",
+      "Bash(ping -c 1 wbvfnkvcwsojfatbcjng.supabase.co)",
+      "Bash(nslookup wbvfnkvcwsojfatbcjng.supabase.co)",
+      "Bash(npx supabase:*)",
+      "mcp__ide__getDiagnostics",
+      "Bash(npm install:*)",
+      "Bash(npm uninstall:*)",
+      "Bash(supabase db *)",
+      "Bash(gh repo *)",
+      "WebFetch(domain:github.com)",
+      "Bash(git clone *)",
+      "Bash(xargs grep *)"
+    ]
+  }
+}

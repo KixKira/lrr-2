@@ -1,14 +1,13 @@
 import {
-  Bell,
-  Menu,
   LogIn,
   LogOut,
   User,
   Shield,
   Stethoscope,
+  Calendar,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, NavLink } from "react-router-dom";
 import { motion } from "framer-motion";
 import { useAuth } from "@/hooks/useAuth";
 import {
@@ -18,16 +17,34 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { cn } from "@/lib/utils";
+import { NotificationBell } from "@/components/notifications/NotificationBell";
 
+/**
+ * Header Titan - Versión Orientada a Conversión
+ * - Mobile: Prioriza "Agendar Cita" como CTA principal.
+ * - Desktop: Mantiene navegación completa y gestión de cuenta.
+ */
 export const Header = () => {
   const { user, profile, isAdmin, isProfessional, signOut, isLoading } =
     useAuth();
   const navigate = useNavigate();
 
   const handleSignOut = async () => {
-    await signOut();
-    navigate("/");
+    try {
+      await signOut();
+    } finally {
+      navigate("/");
+    }
   };
+
+  // Rutas centrales para navegación Desktop
+  const navLinks = [
+    { to: "/", label: "Inicio" },
+    { to: "/professionals", label: "Sobre Mí" },
+    // { to: "/shop", label: "Tienda" },
+    // { to: "/blog", label: "Recursos" },
+  ];
 
   return (
     <motion.header
@@ -35,145 +52,155 @@ export const Header = () => {
       animate={{ y: 0, opacity: 1 }}
       className="sticky top-0 z-40 w-full"
     >
-      <div className="glass rounded-b-2xl md:rounded-none">
-        <div className="container flex h-16 items-center justify-between">
-          <Link to="/" className="flex items-center gap-2">
-            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-calm to-lavender">
+      <div className="glass border-b border-border/40 bg-background/80 backdrop-blur-md">
+        <div className="container flex h-16 items-center justify-between px-4">
+          {/* IDENTIDAD: Logo minimalista */}
+          <Link
+            to="/"
+            className="flex items-center gap-2 hover:opacity-80 transition-all"
+          >
+            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-calm to-lavender shadow-sm">
               <span className="text-lg font-bold text-primary-foreground">
                 R
               </span>
             </div>
-            <span className="text-xl font-bold text-foreground">
+            <span className="text-xl font-bold text-foreground tracking-tight hidden xs:block">
               La Ruta <span className="text-calm">Resiliente</span>
             </span>
           </Link>
-          <nav className="hidden md:flex items-center gap-8">
-            <Link
-              to="/"
-              className="text-sm font-medium text-foreground hover:text-calm transition-colors"
-            >
-              Inicio
-            </Link>
-            <Link
-              to="/professionals"
-              className="text-sm font-medium text-muted-foreground hover:text-calm transition-colors"
-            >
-              Sobre Mí
-            </Link>
-            <Link
-              to="/shop"
-              className="text-sm font-medium text-muted-foreground hover:text-calm transition-colors"
-            >
-              Tienda
-            </Link>
-            <Link
-              to="/blog"
-              className="text-sm font-medium text-muted-foreground hover:text-calm transition-colors"
-            >
-              Recursos
-            </Link>
+
+          {/* NAVEGACIÓN DESKTOP: Solo visible en pantallas grandes */}
+          <nav className="hidden md:flex items-center gap-1">
+            {navLinks.map((link) => (
+              <NavLink
+                key={link.to}
+                to={link.to}
+                className={({ isActive }) =>
+                  cn(
+                    "relative px-4 py-2 text-sm font-medium transition-colors rounded-md",
+                    isActive
+                      ? "text-calm"
+                      : "text-muted-foreground hover:text-foreground",
+                  )
+                }
+              >
+                {({ isActive }) => (
+                  <>
+                    {link.label}
+                    {isActive && (
+                      <motion.div
+                        layoutId="activeNav"
+                        className="absolute bottom-0 left-2 right-2 h-0.5 bg-calm rounded-full"
+                      />
+                    )}
+                  </>
+                )}
+              </NavLink>
+            ))}
           </nav>
-          <div className="flex items-center gap-2">
-            {user && (
-              <Button variant="ghost" size="icon" className="relative">
-                <Bell className="h-5 w-5" />
-                <span className="absolute -top-0.5 -right-0.5 h-2 w-2 rounded-full bg-coral" />
-              </Button>
-            )}
-            <Button variant="calm" size="sm" className="hidden md:flex" asChild>
-              <Link to="/appointments">Agendar Cita</Link>
-            </Button>
 
-            {isLoading ? (
-              <div className="w-8 h-8 rounded-full bg-muted animate-pulse" />
-            ) : user ? (
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" size="icon" className="rounded-full">
-                    <div className="w-8 h-8 rounded-full bg-calm-light flex items-center justify-center">
-                      {profile?.avatar_url ? (
-                        <img
-                          src={profile.avatar_url}
-                          alt=""
-                          className="w-8 h-8 rounded-full object-cover"
-                        />
-                      ) : (
-                        <span className="text-calm text-sm font-medium">
-                          {profile?.first_name?.[0] ||
-                            user.email?.[0]?.toUpperCase()}
-                        </span>
-                      )}
-                    </div>
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="w-56">
-                  <div className="px-2 py-1.5">
-                    <p className="text-sm font-medium">
-                      {profile?.first_name
-                        ? `${profile.first_name} ${profile.last_name || ""}`
-                        : user.email}
-                    </p>
-                    <p className="text-xs text-muted-foreground">
-                      {user.email}
-                    </p>
-                  </div>
-                  <DropdownMenuSeparator />
+          {/* ÁREA DE ACCIÓN DERECHA */}
+          <div className="flex items-center gap-2 sm:gap-3">
+            {/* NOTIFICACIONES: Solo si hay usuario, visible en todas las versiones */}
+            {user && <NotificationBell />}
 
-                  {isAdmin && (
-                    <DropdownMenuItem asChild>
-                      <Link to="/admin" className="cursor-pointer">
-                        <Shield className="h-4 w-4 mr-2" />
-                        Panel Admin
-                      </Link>
-                    </DropdownMenuItem>
-                  )}
-
-                  {isProfessional && (
-                    <DropdownMenuItem asChild>
-                      <Link to="/professional" className="cursor-pointer">
-                        <Stethoscope className="h-4 w-4 mr-2" />
-                        Panel Profesional
-                      </Link>
-                    </DropdownMenuItem>
-                  )}
-
-                  <DropdownMenuItem asChild>
-                    <Link to="/profile" className="cursor-pointer">
-                      <User className="h-4 w-4 mr-2" />
-                      Mi Perfil
-                    </Link>
-                  </DropdownMenuItem>
-
-                  <DropdownMenuItem asChild>
-                    <Link to="/dashboard" className="cursor-pointer">
-                      <User className="h-4 w-4 mr-2" />
-                      Dashboard
-                    </Link>
-                  </DropdownMenuItem>
-
-                  <DropdownMenuSeparator />
-
-                  <DropdownMenuItem
-                    onClick={handleSignOut}
-                    className="cursor-pointer text-destructive focus:text-destructive"
-                  >
-                    <LogOut className="h-4 w-4 mr-2" />
-                    Cerrar Sesión
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
-            ) : (
-              <Button variant="outline" size="sm" asChild>
-                <Link to="/auth">
-                  <LogIn className="h-4 w-4 mr-2" />
-                  Iniciar Sesión
+            {/* CTA PRINCIPAL: "Agendar Cita"
+                - En Mobile: Ahora es visible (sin 'hidden md:flex')
+                - En Mobile: Usamos un tamaño 'sm' o icono si es muy pequeño.
+            */}
+            {!isProfessional && !isAdmin && (
+              <Button
+                variant="calm"
+                size="sm"
+                className="rounded-full shadow-sm hover:shadow-calm/20 transition-all px-4"
+                asChild
+              >
+                <Link to="/appointments">
+                  <Calendar className="h-4 w-4 mr-2 md:hidden lg:block" />
+                  <span>
+                    Agendar<span className="hidden sm:inline"> Cita</span>
+                  </span>
                 </Link>
               </Button>
             )}
 
-            <Button variant="ghost" size="icon" className="md:hidden">
-              <Menu className="h-5 w-5" />
-            </Button>
+            {/* SECCIÓN DE CUENTA (SOLO DESKTOP): 
+                En Mobile esto se omite porque ya está en el MobileNav (Bottom Bar).
+            */}
+            <div className="hidden md:flex items-center pl-2 border-l border-border/50">
+              {isLoading ? (
+                <div className="w-8 h-8 rounded-full bg-muted animate-pulse" />
+              ) : user ? (
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="rounded-full border border-calm/10"
+                    >
+                      <div className="w-8 h-8 rounded-full bg-calm-light flex items-center justify-center overflow-hidden">
+                        {profile?.avatar_url ? (
+                          <img
+                            src={profile.avatar_url}
+                            alt=""
+                            className="w-full h-full object-cover"
+                          />
+                        ) : (
+                          <span className="text-calm text-xs font-bold uppercase">
+                            {profile?.first_name?.[0] || user.email?.[0]}
+                          </span>
+                        )}
+                      </div>
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end" className="w-56 mt-2">
+                    <div className="px-2 py-2 text-sm font-semibold truncate">
+                      {profile?.first_name
+                        ? `${profile.first_name} ${profile.last_name || ""}`
+                        : user.email}
+                    </div>
+                    <DropdownMenuSeparator />
+                    {isAdmin && (
+                      <DropdownMenuItem asChild>
+                        <Link to="/admin">
+                          <Shield className="h-4 w-4 mr-2" /> Admin
+                        </Link>
+                      </DropdownMenuItem>
+                    )}
+                    {(isProfessional || isAdmin) && (
+                      <DropdownMenuItem asChild>
+                        <Link to="/professional-dashboard">
+                          <Stethoscope className="h-4 w-4 mr-2" /> Panel Profesional
+                        </Link>
+                      </DropdownMenuItem>
+                    )}
+                    <DropdownMenuItem asChild>
+                      <Link to="/profile">
+                        <User className="h-4 w-4 mr-2" /> Perfil
+                      </Link>
+                    </DropdownMenuItem>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem
+                      onClick={handleSignOut}
+                      className="text-destructive"
+                    >
+                      <LogOut className="h-4 w-4 mr-2" /> Cerrar Sesión
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              ) : (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="text-muted-foreground hover:text-calm"
+                  asChild
+                >
+                  <Link to="/auth">
+                    <LogIn className="h-4 w-4 mr-2" /> Entrar
+                  </Link>
+                </Button>
+              )}
+            </div>
           </div>
         </div>
       </div>
