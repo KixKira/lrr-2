@@ -11,6 +11,8 @@ import {
   User,
   Phone,
   Mail,
+  Eye,
+  EyeOff,
 } from "lucide-react";
 
 import { es } from "date-fns/locale";
@@ -48,7 +50,7 @@ const professional = {
 };
 
 const Appointments = () => {
-  const { user, profile, isLoading: isAuthLoading } = useAuth();
+  const { user, profile, signUp, isLoading: isAuthLoading } = useAuth();
 
   const [step, setStep] = useState(1);
   const [patientName, setPatientName] = useState(() => {
@@ -83,6 +85,11 @@ const Appointments = () => {
   const [appointmentCreated, setAppointmentCreated] = useState(false);
   const [isNewRegistration, setIsNewRegistration] = useState(false);
   const [professionalId, setProfessionalId] = useState<string | null>(null);
+  const [wantsAccount, setWantsAccount] = useState(false);
+  const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+  const [passwordError, setPasswordError] = useState("");
 
   // Fallback pre-fill when profile arrives after mount (e.g. hard refresh)
   useEffect(() => {
@@ -251,7 +258,19 @@ const Appointments = () => {
       }
 
       if (result.appointment) {
-        setIsNewRegistration(result.isNewUser ?? false);
+        let accountCreated = false;
+        if (!user && wantsAccount && password) {
+          const nameParts = patientName.trim().split(" ");
+          const firstName = nameParts[0] ?? "";
+          const lastName = nameParts.slice(1).join(" ") || undefined;
+          const { error: signUpError } = await signUp(patientEmail, password, firstName, lastName);
+          if (signUpError) {
+            toast.error(`Cita agendada, pero no se pudo crear la cuenta: ${signUpError.message}`);
+          } else {
+            accountCreated = true;
+          }
+        }
+        setIsNewRegistration(accountCreated);
         setAppointmentCreated(true);
         toast.success("¡Cita agendada exitosamente!");
 
@@ -278,7 +297,8 @@ const Appointments = () => {
   const isStep1Valid =
     patientName.trim() !== "" &&
     patientEmail.trim() !== "" &&
-    patientPhone.trim() !== "";
+    patientPhone.trim() !== "" &&
+    (!wantsAccount || (password.length >= 6 && password === confirmPassword));
 
   if (isAuthLoading) {
     return (
@@ -390,6 +410,79 @@ const Appointments = () => {
                     rows={3}
                   />
                 </div>
+
+                {/* Opción de registro — solo para usuarios nuevos no autenticados */}
+                {!user && !isExistingUser && (
+                  <div className="border border-border rounded-xl p-4 space-y-3 bg-muted/30">
+                    <label className="flex items-start gap-3 cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={wantsAccount}
+                        onChange={(e) => {
+                          setWantsAccount(e.target.checked);
+                          setPassword("");
+                          setConfirmPassword("");
+                          setPasswordError("");
+                        }}
+                        className="mt-1 accent-[hsl(var(--calm))]"
+                      />
+                      <div>
+                        <p className="font-medium text-sm">Crear una cuenta</p>
+                        <p className="text-xs text-muted-foreground">
+                          Para ver y gestionar tus citas en cualquier momento
+                        </p>
+                      </div>
+                    </label>
+
+                    {wantsAccount && (
+                      <div className="space-y-3 pt-1">
+                        <div className="space-y-2">
+                          <Label htmlFor="password">Contraseña</Label>
+                          <div className="relative">
+                            <Input
+                              id="password"
+                              type={showPassword ? "text" : "password"}
+                              placeholder="Mínimo 6 caracteres"
+                              value={password}
+                              onChange={(e) => {
+                                setPassword(e.target.value);
+                                setPasswordError("");
+                              }}
+                              className="pr-10"
+                            />
+                            <button
+                              type="button"
+                              onClick={() => setShowPassword((v) => !v)}
+                              className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground"
+                            >
+                              {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                            </button>
+                          </div>
+                        </div>
+                        <div className="space-y-2">
+                          <Label htmlFor="confirmPassword">Confirmar contraseña</Label>
+                          <Input
+                            id="confirmPassword"
+                            type={showPassword ? "text" : "password"}
+                            placeholder="Repite tu contraseña"
+                            value={confirmPassword}
+                            onChange={(e) => {
+                              setConfirmPassword(e.target.value);
+                              setPasswordError(
+                                e.target.value && e.target.value !== password
+                                  ? "Las contraseñas no coinciden"
+                                  : "",
+                              );
+                            }}
+                          />
+                          {passwordError && (
+                            <p className="text-xs text-destructive">{passwordError}</p>
+                          )}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                )}
               </div>
             </motion.div>
           )}

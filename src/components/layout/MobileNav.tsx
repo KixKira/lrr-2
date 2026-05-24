@@ -10,7 +10,7 @@ export const MobileNav = () => {
   const navItems = [
     { icon: Home, label: "Inicio", path: "/" },
     { icon: Users, label: "Sobre Mí", path: "/professionals" },
-    { icon: ShoppingBag, label: "Tienda", path: "/shop" },
+    // { icon: ShoppingBag, label: "Tienda", path: "/shop" },
     { icon: Calendar, label: "Citas", path: "/appointments" },
   ];
 

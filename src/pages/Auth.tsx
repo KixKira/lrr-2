@@ -14,7 +14,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
 import { z } from "zod";
@@ -56,12 +56,14 @@ const Auth = () => {
 
   const { signIn, signUp, user, isLoading } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
+  const from = (location.state as { from?: string })?.from || "/dashboard";
 
   useEffect(() => {
     if (!isLoading && user) {
-      navigate("/dashboard");
+      navigate(from, { replace: true });
     }
-  }, [user, isLoading, navigate]);
+  }, [user, isLoading, navigate, from]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -110,7 +112,7 @@ const Auth = () => {
         } else {
           console.log("✅ Login exitoso");
           toast.success("¡Bienvenido de vuelta!");
-          navigate("/dashboard");
+          navigate(from, { replace: true });
         }
       } else {
         const result = signupSchema.safeParse(formData);
@@ -195,7 +197,7 @@ const Auth = () => {
               </span>
             </div>
             <span className="text-2xl font-bold text-foreground">
-              Mind<span className="text-calm">Care</span>
+              La Ruta <span className="text-calm">Resiliente</span>
             </span>
           </Link>
 

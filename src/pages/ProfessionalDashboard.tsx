@@ -103,6 +103,18 @@ const DAYS_OF_WEEK = [
   { id: 6, name: "Sábado", short: "Sáb" },
 ];
 
+// Retorna la próxima fecha (incluyendo hoy) para un día de semana dado (0=Dom, 6=Sáb)
+const getNextDateForDay = (dayOfWeek: number): Date => {
+  const today = new Date();
+  const diff = (dayOfWeek - today.getDay() + 7) % 7;
+  const next = new Date(today);
+  next.setDate(today.getDate() + diff);
+  return next;
+};
+
+const formatShortDate = (date: Date): string =>
+  date.toLocaleDateString("es-ES", { day: "numeric", month: "short" });
+
 // Horarios predefinidos
 const TIME_SLOTS = [
   "07:00", "07:30", "08:00", "08:30", "09:00", "09:30", "10:00", "10:30",
@@ -127,6 +139,11 @@ interface AvailabilitySlot {
   isAvailable: boolean;
   slotDuration: number;
 }
+
+// Supabase returns timestamptz without 'Z', causing JS to parse as local time.
+// This helper forces UTC interpretation.
+const parseUtcDate = (s: string) =>
+  new Date(/(Z|[+-]\d{2}:?\d{2})$/.test(s) ? s : s + "Z");
 
 const ProfessionalDashboard = () => {
   const { user, isProfessional, isAdmin, isLoading, profile } = useAuth();
@@ -508,13 +525,13 @@ const ProfessionalDashboard = () => {
     const nonCancelled = appointments.filter((a) => a.status !== "cancelled");
     const totalPatients = new Set(nonCancelled.map((a) => a.patient_id)).size;
     const appointmentsThisWeek = appointments.filter((a) => {
-      const d = new Date(a.scheduled_at);
+      const d = parseUtcDate(a.scheduled_at);
       return d >= startOfWeek && d < endOfWeek && a.status !== "cancelled";
     }).length;
     const pendingCount = appointments.filter((a) => a.status === "pending").length;
     const monthlyEarnings = appointments
       .filter((a) => {
-        const d = new Date(a.scheduled_at);
+        const d = parseUtcDate(a.scheduled_at);
         return a.status === "completed" && d >= startOfMonth && d < endOfMonth;
       })
       .reduce((sum, a) => sum + (a.price || 0), 0);
@@ -714,7 +731,7 @@ const ProfessionalDashboard = () => {
                             ? `${apt.patient.first_name ?? ""} ${apt.patient.last_name ?? ""}`.trim() || apt.patient.email
                             : "Paciente";
                           const patientInitial = patientName[0]?.toUpperCase() ?? "P";
-                          const aptDate = new Date(apt.scheduled_at);
+                          const aptDate = parseUtcDate(apt.scheduled_at);
                           return (
                             <div
                               key={apt.id}
@@ -731,9 +748,9 @@ const ProfessionalDashboard = () => {
                                 <div>
                                   <p className="font-medium">{patientName}</p>
                                   <p className="text-sm text-muted-foreground">
-                                    {aptDate.toLocaleDateString("es-ES", { weekday: "short", day: "numeric", month: "short" })}
+                                    {aptDate.toLocaleDateString("es-ES", { weekday: "short", day: "numeric", month: "short", timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone })}
                                     {" a las "}
-                                    {aptDate.toLocaleTimeString("es-ES", { hour: "2-digit", minute: "2-digit" })}
+                                    {aptDate.toLocaleTimeString("es-ES", { hour: "2-digit", minute: "2-digit", hour12: false, timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone })}
                                     {" • "}
                                     {apt.appointment_type === "online" ? "Online" : "Presencial"}
                                   </p>
@@ -775,7 +792,7 @@ const ProfessionalDashboard = () => {
                           ? `${apt.patient.first_name ?? ""} ${apt.patient.last_name ?? ""}`.trim() || apt.patient.email
                           : "Paciente";
                         const patientInitial = patientName[0]?.toUpperCase() ?? "P";
-                        const aptDate = new Date(apt.scheduled_at);
+                        const aptDate = parseUtcDate(apt.scheduled_at);
                         return (
                           <div
                             key={apt.id}
@@ -792,9 +809,9 @@ const ProfessionalDashboard = () => {
                               <div>
                                 <p className="font-medium">{patientName}</p>
                                 <p className="text-sm text-muted-foreground">
-                                  {aptDate.toLocaleDateString("es-ES", { weekday: "short", day: "numeric", month: "short" })}
+                                  {aptDate.toLocaleDateString("es-ES", { weekday: "short", day: "numeric", month: "short", timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone })}
                                   {" a las "}
-                                  {aptDate.toLocaleTimeString("es-ES", { hour: "2-digit", minute: "2-digit" })}
+                                  {aptDate.toLocaleTimeString("es-ES", { hour: "2-digit", minute: "2-digit", hour12: false, timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone })}
                                 </p>
                               </div>
                             </div>
@@ -945,6 +962,8 @@ const ProfessionalDashboard = () => {
                     <div className="space-y-2">
                       {DAYS_OF_WEEK.map((day) => {
                         const slotsCount = getSlotsForDay(day.id).length;
+                        const nextDate = getNextDateForDay(day.id);
+                        const isToday = nextDate.toDateString() === new Date().toDateString();
                         return (
                           <button
                             key={day.id}
@@ -955,7 +974,14 @@ const ProfessionalDashboard = () => {
                                 : "bg-muted/50 hover:bg-muted"
                             }`}
                           >
-                            <span className="font-medium">{day.name}</span>
+                            <div>
+                              <span className="font-medium">{day.name}</span>
+                              <p className={`text-xs mt-0.5 ${
+                                selectedDay === day.id ? "text-white/70" : "text-muted-foreground"
+                              }`}>
+                                {isToday ? "Hoy" : "Próx."} {formatShortDate(nextDate)}
+                              </p>
+                            </div>
                             <div className="flex items-center gap-2">
                               {slotsCount > 0 && (
                                 <span className={`text-xs px-2 py-1 rounded-full ${
@@ -1005,7 +1031,8 @@ const ProfessionalDashboard = () => {
                               {DAYS_OF_WEEK.find(d => d.id === selectedDay)?.name}
                             </h3>
                             <p className="text-sm text-muted-foreground">
-                              Configura los horarios de atención para este día
+                              Próx. fecha: <strong>{formatShortDate(getNextDateForDay(selectedDay))}</strong>
+                              {" · "}Aplica cada semana
                             </p>
                           </div>
                           <div className="flex gap-2">

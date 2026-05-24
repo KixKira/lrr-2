@@ -80,7 +80,8 @@ export const getAvailability = async (professionalId?: string, date?: string) =>
 
       if (appointments) {
         bookedSlots = appointments.map((a) => {
-          const d = new Date(a.scheduled_at);
+          const raw = a.scheduled_at;
+          const d = new Date(/(Z|[+-]\d{2}:?\d{2})$/.test(raw) ? raw : raw + "Z");
           return `${d.getHours().toString().padStart(2, "0")}:${d.getMinutes().toString().padStart(2, "0")}`;
         });
       }
@@ -121,21 +122,13 @@ export const bookAppointmentAsGuest = async (data: {
   notes?: string;
   price?: number;
 }) => {
-  const { data: { session } } = await supabase.auth.getSession();
-  const headers: Record<string, string> = { "Content-Type": "application/json" };
-  if (session) headers.Authorization = `Bearer ${session.access_token}`;
-
-  const response = await fetch(`${FUNCTIONS_URL}/book-appointment`, {
-    method: "POST",
-    headers,
-    body: JSON.stringify(data),
+  const { data: result, error } = await supabase.functions.invoke("book-appointment", {
+    body: data,
   });
 
-  if (!response.ok) {
-    const err = await response.json().catch(() => ({}));
-    throw new Error(err.error ?? "Error creando cita");
-  }
-  return await response.json();
+  if (error) throw new Error(error.message ?? "Error creando cita");
+  if (result?.error) throw new Error(result.error);
+  return result;
 };
 
 // Create appointment
@@ -168,19 +161,19 @@ export const updateAppointment = async (data: {
   status?: string;
   notes?: string;
 }) => {
-  try {
-    const response = await fetch(`${FUNCTIONS_URL}/appointments`, {
-      method: "PATCH",
-      headers: await getAuthHeaders(),
-      body: JSON.stringify(data),
-    });
+  const updateData: Record<string, unknown> = {};
+  if (data.status !== undefined) updateData.status = data.status;
+  if (data.notes !== undefined) updateData.notes = data.notes;
 
-    if (!response.ok) throw new Error("Error actualizando cita");
-    return await response.json();
-  } catch (error) {
-    console.error("Error actualizando cita:", error);
-    throw error;
-  }
+  const { data: result, error } = await supabase
+    .from("appointments")
+    .update(updateData)
+    .eq("id", data.appointmentId)
+    .select()
+    .single();
+
+  if (error) throw new Error("Error actualizando cita");
+  return { appointment: result };
 };
 
 // Get clinical notes (professional only)
@@ -380,22 +373,13 @@ export const saveAvailability = async (slots: {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) throw new Error("No autenticado");
 
-  // Get or create professional record
-  let { data: prof } = await supabase
+  const { data: prof } = await supabase
     .from("professionals")
     .select("id")
     .eq("user_id", user.id)
     .maybeSingle();
 
-  if (!prof) {
-    const { data: newProf, error: createError } = await supabase
-      .from("professionals")
-      .insert({ user_id: user.id, specialty: "Sin especificar" })
-      .select("id")
-      .single();
-    if (createError) throw new Error("No se pudo crear el perfil profesional: " + createError.message);
-    prof = newProf;
-  }
+  if (!prof) throw new Error("No se encontró un perfil profesional para este usuario");
 
   const slotsToInsert = slots.map((slot) => ({
     professional_id: prof.id,

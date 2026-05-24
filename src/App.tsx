@@ -1,7 +1,7 @@
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate, useLocation } from "react-router-dom";
 import Index from "./pages/Index";
 import Appointments from "./pages/Appointments";
 import Professionals from "./pages/Professionals";
@@ -21,8 +21,9 @@ const queryClient = new QueryClient();
 
 const ProtectedRoute = ({ children }: { children: ReactNode }) => {
   const { user, isLoading } = useAuth();
+  const location = useLocation();
   if (isLoading) return null;
-  if (!user) return <Navigate to="/" replace />;
+  if (!user) return <Navigate to="/auth" state={{ from: location.pathname }} replace />;
   return <>{children}</>;
 };
 
@@ -38,7 +39,7 @@ const App = () => (
           <Route path="/professionals" element={<Professionals />} />
           <Route path="/shop" element={<Shop />} />
           <Route path="/blog" element={<Blog />} />
-          <Route path="/appointments" element={<ProtectedRoute><Appointments /></ProtectedRoute>} />
+          <Route path="/appointments" element={<Appointments />} />
           <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
           <Route path="/profile" element={<ProtectedRoute><PatientProfile /></ProtectedRoute>} />
           <Route path="/professional-dashboard" element={<ProtectedRoute><ProfessionalDashboard /></ProtectedRoute>} />
