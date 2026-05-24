@@ -2,8 +2,20 @@ import { motion } from "framer-motion";
 import { ArrowRight, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
+import { useAuth } from "@/hooks/useAuth";
 
 export const AboutSection = () => {
+  const { user, isAdmin, isProfessional } = useAuth();
+
+  let ctaDestination = "/auth";
+  if (user) {
+    if (isAdmin) ctaDestination = "/admin";
+    else if (isProfessional) ctaDestination = "/professional-dashboard";
+    else ctaDestination = "/dashboard";
+  }
+
+  const ctaLabel = user ? "Ir al dashboard" : "Regístrate";
+
   return (
     <section id="que-es" className="scroll-mt-16 py-16 md:py-24 bg-muted/30">
       <div className="container">
@@ -41,8 +53,8 @@ export const AboutSection = () => {
             </p>
 
             <Button variant="hero" size="xl" className="group" asChild>
-              <Link to="/auth">
-                Regístrate
+              <Link to={ctaDestination}>
+                {ctaLabel}
                 <ArrowRight className="h-5 w-5 transition-transform group-hover:translate-x-1" />
               </Link>
             </Button>
