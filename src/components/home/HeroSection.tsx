@@ -1,7 +1,6 @@
 import { motion } from "framer-motion";
 import { ArrowRight, Sparkles, Heart, Shield } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Link } from "react-router-dom";
 
 export const HeroSection = () => {
   return (
@@ -58,10 +57,10 @@ export const HeroSection = () => {
             className="flex flex-col sm:flex-row gap-4 w-full sm:w-auto"
           >
             <Button variant="hero" size="xl" className="group" asChild>
-              <Link to="/appointments">
-                Agendar Cita Ahora
+              <a href="#que-es">
+                Descubre cómo iniciar
                 <ArrowRight className="h-5 w-5 transition-transform group-hover:translate-x-1" />
-              </Link>
+              </a>
             </Button>
             {/* <Button variant="outline" size="xl" asChild>
               <Link to="/professionals">Ver Profesionales</Link>
