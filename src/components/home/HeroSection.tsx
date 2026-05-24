@@ -62,9 +62,6 @@ export const HeroSection = () => {
                 <ArrowRight className="h-5 w-5 transition-transform group-hover:translate-x-1" />
               </a>
             </Button>
-            {/* <Button variant="outline" size="xl" asChild>
-              <Link to="/professionals">Ver Profesionales</Link>
-            </Button> */}
           </motion.div>
 
           {/* Trust badges */}

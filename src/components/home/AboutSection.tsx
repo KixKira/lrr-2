@@ -5,7 +5,7 @@ import { Link } from "react-router-dom";
 
 export const AboutSection = () => {
   return (
-    <section id="que-es" className="py-16 md:py-24 bg-muted/30">
+    <section id="que-es" className="scroll-mt-16 py-16 md:py-24 bg-muted/30">
       <div className="container">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
 
